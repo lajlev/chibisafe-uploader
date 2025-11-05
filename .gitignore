@@ -1,0 +1,75 @@
+# Environment & Configuration
+# Never commit sensitive credentials and configuration
+chibisafe_watcher.env
+*.env
+.env.local
+.env.*.local
+
+# Runtime Files
+# Process ID file - auto-generated when running
+chibisafe_watcher.pid
+*.pid
+
+# Logs
+# Application and error logs - auto-generated
+chibisafe_watcher.log
+chibisafe_watcher.error.log
+*.log
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.iml
+*.iws
+*.ipr
+.netbeans/
+nbproject/
+.emacs.desktop
+.emacs.desktop.lock
+*.elc
+.python-version
+.ruby-version
+
+# OS Temporary Files
+Thumbs.db
+.directory
+*.tmp
+*.bak
+*.swp
+
+# Testing & Temporary
+test_*.txt
+temp/
+tmp/
+.test/
+
+# macOS LaunchAgent (local installation path, not the template)
+~/Library/LaunchAgents/com.chibisafe.watcher.plist
+
+# Backup Files
+*.backup
+*.bak
+*.orig
+
+# System
+.venv/
+venv/
+env/
+node_modules/
+.cache/
