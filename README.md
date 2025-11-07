@@ -24,8 +24,8 @@ A lightweight macOS menubar app that monitors a directory and automatically uplo
 brew install fswatch
 ```
 
-### 2. Configure
-Edit `chibisafe_watcher.env`:
+### 2. Create and Configure
+Create & Edit `chibisafe_watcher.env`:
 ```bash
 CHIBISAFE_REQUEST_URL=https://your-server.com/api/upload
 CHIBISAFE_API_KEY=your_api_key

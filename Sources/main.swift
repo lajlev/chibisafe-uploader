@@ -209,6 +209,13 @@ class FileWatcher: NSObject {
             return
         }
 
+        // Check if it's a .DS_Store file
+        let fileName = URL(fileURLWithPath: filePath).lastPathComponent
+        if fileName == ".DS_Store" {
+            print("Skipping .DS_Store file: \(filePath)")
+            return
+        }
+
         // Check if it's a file
         var isDir: ObjCBool = false
         guard FileManager.default.fileExists(atPath: filePath, isDirectory: &isDir),
