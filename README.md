@@ -10,6 +10,8 @@ A lightweight macOS menubar app that monitors a directory and automatically uplo
 - 🔗 Visual feedback: icon changes to 🔗 on successful upload
 - 🖇️ Click icon to open Chibisafe dashboard
 - 🛡️ Duplicate prevention & error handling
+- 🧹 Automatic cleanup of old files (configurable)
+- 🚫 Filters out .DS_Store files
 
 ## Requirements
 
@@ -31,7 +33,19 @@ CHIBISAFE_REQUEST_URL=https://your-server.com/api/upload
 CHIBISAFE_API_KEY=your_api_key
 CHIBISAFE_ALBUM_UUID=your_album_uuid
 CHIBISAFE_WATCH_DIR=/Users/username/Uploads/
+
+# Optional: Auto-cleanup old files
+CHIBISAFE_CLEANUP_ENABLED=true
+CHIBISAFE_CLEANUP_AGE_DAYS=180
 ```
+
+**Configuration Options:**
+- `CHIBISAFE_REQUEST_URL` - Your Chibisafe upload endpoint
+- `CHIBISAFE_API_KEY` - Your API key (must have admin permissions for cleanup)
+- `CHIBISAFE_ALBUM_UUID` - Album UUID to upload to
+- `CHIBISAFE_WATCH_DIR` - Directory to monitor for new files
+- `CHIBISAFE_CLEANUP_ENABLED` - Enable automatic cleanup (true/false, default: false)
+- `CHIBISAFE_CLEANUP_AGE_DAYS` - Delete files older than X days (default: 180 = 6 months)
 
 ### 3. Build & Run
 ```bash
@@ -55,10 +69,35 @@ Or use the launcher:
 
 ## Menubar Menu
 
-Click the 📤 icon to:
+Click the ☁️ icon to:
 - **Open Dashboard** - Opens your Chibisafe dashboard
 - **Status: Watching** - Shows monitoring is active
+- **Clean Old Files Now** - Manually trigger cleanup (removes files older than configured age)
+- **Auto-cleanup: Enabled/Disabled** - Shows cleanup status and age threshold
 - **Quit** - Close the app
+
+## File Cleanup Feature
+
+The app can automatically remove old files from your Chibisafe album to save storage space.
+
+**How it works:**
+- Runs daily when auto-cleanup is enabled
+- Checks all files in the configured album
+- Deletes files older than the configured age threshold (default: 180 days / 6 months)
+- Can be triggered manually from the menubar
+
+**Setup:**
+1. Enable in `chibisafe_watcher.env`:
+   ```bash
+   CHIBISAFE_CLEANUP_ENABLED=true
+   CHIBISAFE_CLEANUP_AGE_DAYS=180
+   ```
+2. Ensure your API key has admin permissions
+3. Restart the app
+
+**Manual cleanup:**
+- Click the menubar icon → "Clean Old Files Now"
+- Shows notification with number of files deleted
 
 ## Auto-start at Login
 
@@ -130,7 +169,14 @@ MIT
 
 ## Version
 
+**1.1.0** - November 2025
+- Added automatic cleanup feature for old files
+- Added .DS_Store file filtering
+- Configurable cleanup age threshold
+- Manual cleanup trigger from menubar
+
 **1.0.0** - November 2025
+- Initial release
 
 ---
 
