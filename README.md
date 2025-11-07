@@ -123,11 +123,6 @@ Expected output:
 open ChibisafeUploader.app
 ```
 
-Or use the convenience launcher:
-```bash
-./run.sh
-```
-
 The app will start monitoring your watch directory. Look for the ☁️ icon in your menubar!
 
 ## How It Works
@@ -153,50 +148,6 @@ Simply drag, copy, or save files to your configured watch directory. The app wil
 
 **Supported:** Images, videos, documents, archives - any file type!
 
-### Menubar Menu Options
-
-Click the ☁️ icon to access:
-
-| Menu Item | Description |
-|-----------|-------------|
-| **Open Dashboard** | Opens your Chibisafe web dashboard |
-| **Recent Uploads** | Lists last 10 uploaded files (click to open URL) |
-| **Status: Watching** | Shows the app is monitoring your directory |
-| **Clean Old Files Now** | Manually trigger cleanup of old files |
-| **Auto-cleanup Status** | Shows if automatic cleanup is enabled |
-| **Quit** | Stop the app |
-
-### Recent Uploads Feature
-
-The app tracks your last 10 uploads in the menu:
-- Click any filename to open its URL in your browser
-- Hover to see the full URL in a tooltip
-- Uploads persist across app restarts
-- Automatically managed (keeps only 10 most recent)
-
-## File Cleanup Feature
-
-The app can automatically remove old files from your Chibisafe album to save storage space.
-
-**How it works:**
-- Runs daily when auto-cleanup is enabled
-- Checks all files in the configured album
-- Deletes files older than the configured age threshold (default: 180 days / 6 months)
-- Can be triggered manually from the menubar
-
-**Setup:**
-1. Enable in `chibisafe_watcher.env`:
-   ```bash
-   CHIBISAFE_CLEANUP_ENABLED=true
-   CHIBISAFE_CLEANUP_AGE_DAYS=180
-   ```
-2. Ensure your API key has admin permissions
-3. Restart the app
-
-**Manual cleanup:**
-- Click the menubar icon → "Clean Old Files Now"
-- Shows notification with number of files deleted
-
 ## Advanced Configuration
 
 ### Auto-start at Login
@@ -210,28 +161,11 @@ To launch the app automatically when you log in:
 
 The app will now start automatically on login!
 
-### Custom Watch Directory
 
-You can use any directory - here are some useful options:
-
-```bash
-# Desktop folder
-CHIBISAFE_WATCH_DIR=/Users/yourusername/Desktop
-
-# Screenshots folder (great for ShareX-style workflow)
-CHIBISAFE_WATCH_DIR=/Users/yourusername/Desktop/Screenshots
-
-# Downloads folder
-CHIBISAFE_WATCH_DIR=/Users/yourusername/Downloads
-
-# Custom Dropbox-style folder
-CHIBISAFE_WATCH_DIR=/Users/yourusername/CloudUpload
-```
-
-**Tip:** Combine with macOS screenshot settings:
+### Combine with macOS screenshot settings:
 ```bash
 # Save screenshots directly to watch directory
-defaults write com.apple.screencapture location ~/Desktop/Screenshots
+defaults write com.apple.screencapture location ~/Uploads
 killall SystemUIServer
 ```
 
@@ -274,8 +208,8 @@ cp ~/Desktop/test.txt /path/to/your/watch/directory/
 
 **View detailed logs:**
 ```bash
-# Run the app with console output visible
-./run.sh
+# Run the app from terminal to see console output
+./.build/release/ChibisafeUploader
 
 # In another terminal, test an upload
 echo "test" > ~/Desktop/Uploads/test.txt
@@ -324,7 +258,6 @@ chibisafe-uploader/
 ├── Info.plist                  # Template plist
 ├── AppIcon.icns               # Source app icon
 ├── build.sh                   # Build automation script
-├── run.sh                     # Launcher script
 ├── chibisafe_watcher.env      # Your configuration (git-ignored)
 └── README.md                  # This file
 ```
@@ -371,27 +304,6 @@ Contributions are welcome! Here's how you can help:
 
 MIT License - feel free to use, modify, and distribute!
 
-## Changelog
-
-### Version 1.1.0 (November 2025)
-- ✨ Added recent uploads list in menubar (last 10 files)
-- 🧹 Added automatic cleanup feature for old files
-- 🚫 Added .DS_Store file filtering
-- 🎨 Added cloud emoji app icon
-- ⚙️ Added build script for easy compilation
-- 📝 Configurable cleanup age threshold
-- 🔘 Manual cleanup trigger from menubar
-- 💾 Persistent upload history with UserDefaults
-
-### Version 1.0.0 (November 2025)
-- 🎉 Initial release
-- ☁️ Automatic file uploads to Chibisafe
-- 📋 Clipboard URL copying
-- 🔗 Visual upload feedback
-- 📁 Real-time directory monitoring
-- 🛡️ Error handling and duplicate prevention
-
----
 
 ## Quick Links
 

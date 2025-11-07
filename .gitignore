@@ -3,6 +3,9 @@ chibisafe_watcher.env
 *.env
 .env.local
 
+# Compiled App
+ChibisafeUploader.app
+
 # Runtime Files
 *.pid
 *.log
