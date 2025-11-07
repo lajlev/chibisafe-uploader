@@ -3,6 +3,47 @@ import AppKit
 import Foundation
 import UniformTypeIdentifiers
 
+struct RecentUpload: Codable {
+    let filename: String
+    let url: String
+    let timestamp: Date
+}
+
+class RecentUploadsManager {
+    private let maxUploads = 10
+    private let userDefaultsKey = "RecentUploads"
+
+    func addUpload(filename: String, url: String) {
+        var uploads = getRecentUploads()
+
+        // Add new upload at the beginning
+        let newUpload = RecentUpload(filename: filename, url: url, timestamp: Date())
+        uploads.insert(newUpload, at: 0)
+
+        // Keep only last 10
+        if uploads.count > maxUploads {
+            uploads = Array(uploads.prefix(maxUploads))
+        }
+
+        // Save to UserDefaults
+        if let encoded = try? JSONEncoder().encode(uploads) {
+            UserDefaults.standard.set(encoded, forKey: userDefaultsKey)
+        }
+    }
+
+    func getRecentUploads() -> [RecentUpload] {
+        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
+              let uploads = try? JSONDecoder().decode([RecentUpload].self, from: data) else {
+            return []
+        }
+        return uploads
+    }
+
+    func clearAll() {
+        UserDefaults.standard.removeObject(forKey: userDefaultsKey)
+    }
+}
+
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var menubarController: MenubarController?
@@ -37,6 +78,7 @@ class MenubarController: NSObject, NSMenuDelegate {
     let config: Config
     var cleanupManager: FileCleanupManager?
     var cleanupTimer: Timer?
+    let recentUploadsManager = RecentUploadsManager()
 
     init(statusItem: NSStatusItem) {
         self.statusItem = statusItem
@@ -64,37 +106,13 @@ class MenubarController: NSObject, NSMenuDelegate {
 
         super.init()
 
-        // Set up menu
+        // Set up menu with delegate for dynamic updates
         let menu = NSMenu()
-
-        let dashboardItem = NSMenuItem(title: "Open Dashboard", action: #selector(openDashboard), keyEquivalent: "")
-        dashboardItem.target = self
-        menu.addItem(dashboardItem)
-
-        menu.addItem(NSMenuItem.separator())
-
-        let statusLabel = NSMenuItem(title: "Status: Watching", action: nil, keyEquivalent: "")
-        menu.addItem(statusLabel)
-
-        menu.addItem(NSMenuItem.separator())
-
-        // Add cleanup menu item
-        let cleanupItem = NSMenuItem(title: "Clean Old Files Now", action: #selector(triggerCleanup), keyEquivalent: "")
-        cleanupItem.target = self
-        menu.addItem(cleanupItem)
-
-        // Show cleanup status
-        let cleanupStatus = config.cleanupEnabled ? "Auto-cleanup: Enabled (\(config.cleanupAgeDays) days)" : "Auto-cleanup: Disabled"
-        let cleanupStatusItem = NSMenuItem(title: cleanupStatus, action: nil, keyEquivalent: "")
-        menu.addItem(cleanupStatusItem)
-
-        menu.addItem(NSMenuItem.separator())
-
-        let quitItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
-        quitItem.target = self
-        menu.addItem(quitItem)
-
+        menu.delegate = self
         statusItem.menu = menu
+
+        // Build initial menu
+        buildMenu()
 
         // Start watching
         fileWatcher.delegate = self
@@ -106,8 +124,73 @@ class MenubarController: NSObject, NSMenuDelegate {
         }
     }
 
+    func buildMenu() {
+        guard let menu = statusItem.menu else { return }
+        menu.removeAllItems()
+
+        // Dashboard
+        let dashboardItem = NSMenuItem(title: "Open Dashboard", action: #selector(openDashboard), keyEquivalent: "")
+        dashboardItem.target = self
+        menu.addItem(dashboardItem)
+
+        menu.addItem(NSMenuItem.separator())
+
+        // Recent uploads section
+        let recentUploads = recentUploadsManager.getRecentUploads()
+        if !recentUploads.isEmpty {
+            let recentHeader = NSMenuItem(title: "Recent Uploads", action: nil, keyEquivalent: "")
+            recentHeader.isEnabled = false
+            menu.addItem(recentHeader)
+
+            for upload in recentUploads {
+                let uploadItem = NSMenuItem(title: "  \(upload.filename)", action: #selector(openUploadURL(_:)), keyEquivalent: "")
+                uploadItem.target = self
+                uploadItem.representedObject = upload.url
+                uploadItem.toolTip = upload.url
+                menu.addItem(uploadItem)
+            }
+
+            menu.addItem(NSMenuItem.separator())
+        }
+
+        // Status
+        let statusLabel = NSMenuItem(title: "Status: Watching", action: nil, keyEquivalent: "")
+        menu.addItem(statusLabel)
+
+        menu.addItem(NSMenuItem.separator())
+
+        // Cleanup menu item
+        let cleanupItem = NSMenuItem(title: "Clean Old Files Now", action: #selector(triggerCleanup), keyEquivalent: "")
+        cleanupItem.target = self
+        menu.addItem(cleanupItem)
+
+        // Show cleanup status
+        let cleanupStatus = config.cleanupEnabled ? "Auto-cleanup: Enabled (\(config.cleanupAgeDays) days)" : "Auto-cleanup: Disabled"
+        let cleanupStatusItem = NSMenuItem(title: cleanupStatus, action: nil, keyEquivalent: "")
+        menu.addItem(cleanupStatusItem)
+
+        menu.addItem(NSMenuItem.separator())
+
+        // Quit
+        let quitItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
+        quitItem.target = self
+        menu.addItem(quitItem)
+    }
+
+    // NSMenuDelegate method - called when menu is about to open
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        buildMenu()
+    }
+
     @objc func openDashboard() {
         if let url = URL(string: "https://share.lillefar.com/dashboard") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    @objc func openUploadURL(_ sender: NSMenuItem) {
+        if let urlString = sender.representedObject as? String,
+           let url = URL(string: urlString) {
             NSWorkspace.shared.open(url)
         }
     }
@@ -165,6 +248,12 @@ extension MenubarController: FileWatcherDelegate {
     }
 
     func fileWatcher(_ watcher: FileWatcher, didSuccessfullyUpload file: String, withURL url: String) {
+        // Get filename from path
+        let filename = URL(fileURLWithPath: file).lastPathComponent
+
+        // Save to recent uploads
+        recentUploadsManager.addUpload(filename: filename, url: url)
+
         // Copy URL to clipboard
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(url, forType: .string)
